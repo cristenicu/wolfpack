@@ -9,3 +9,4 @@ What was implemented:
 - Filter by `Dealer`, `Make` and `Model`
 
 ###### Please run `composer install` to get the vendors modules
+For database please see `wolfpack.sql`
