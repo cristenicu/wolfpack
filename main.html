@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Cars</title>
+        <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+
+        <script src="bower_components/vue/dist/vue.js"></script>
+        <script src="bower_components/vue-resource/dist/vue-resource.js"></script>
+    </head>
+    <body id="app">
+        <div class="container">
+            <table class="table">
+                <tr>
+                    <th>Dealer</th>
+                    <th>Make</th>
+                    <th>Model</th>
+                    <th>Km</th>
+                    <th>Year</th>
+                    <th>Price (€)</th>
+                    <th></th>
+                </tr>
+
+                <!-- FILTER -->
+                <tr>
+                    <td>
+                        <select v-model="dealer_filter" @click="filter('dealer_id', dealer_filter)">
+                            <option value="" >All</option>
+                            <option v-for="dealer in dealers" value="{{dealer.id}}" >{{dealer.name}}</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select v-model="make_filter" @click="filter('make_id', make_filter)">
+                            <option value="" >All</option>
+                            <option v-for="make in makes" value="{{make.id}}">{{make.name}}</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select v-model="model_filter" @click="filter('model_id', model_filter)">
+                            <option value="" >All</option>
+                            <option v-for="model in models" value="{{model.id}}">{{model.name}}</option>
+                        </select>
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+
+                <!-- DATA -->
+                <tr v-for="(key, car) in cars">
+                    <td>{{car.dealer.name}}</td>
+                    <td>{{car.make.name}}</td>
+                    <td>{{car.model.name}}</td>
+                    <td>{{car.km}}</td>
+                    <td>{{car.year}}</td>
+                    <td>{{car.price}}</td>
+                    <td></td>
+                </tr>
+
+                <!-- ADD -->
+                <tr>
+                    <td>
+                        <select v-model="dealer">
+                            <option v-for="dealer in dealers" value="{{dealer.id}}">{{dealer.name}}</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select v-model="make">
+                            <option v-for="make in makes" value="{{make.id}}">{{make.name}}</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select v-model="model">
+                            <option v-for="model in models" value="{{model.id}}">{{model.name}}</option>
+                        </select>
+                    </td>
+                    <td><input type="text" v-model="km"/></td>
+                    <td><input type="text" v-model="year"/></td>
+                    <td><input type="text" v-model="price"/></td>
+                    <td><a href="#" @click="add()">Add</a></td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            cars: [],
+            dealers: [], makes: [], models: [],
+            dealer: "", make: "", model: "", km: "", year: "", price: "",
+            filters: {}, dealer_filter: "", make_filter: "", model_filter: "",
+        },
+        ready: function() {
+            this.$http.get('api.php?action=getCars').then((response) => {
+                this.cars = JSON.parse(response.body);
+            }, (error) => {});
+
+            this.$http.get('api.php?action=getFormData').then((response) => {
+                var formData = JSON.parse(response.body);
+                this.dealers = formData.dealers;
+                this.makes = formData.makes;
+                this.models = formData.models;
+            }, (error) => {});
+        },
+        methods: {
+            add: function() {
+                var formData = JSON.stringify({dealer: this.dealer, make: this.make, model: this.model, km: this.km, year: this.year, price: this.price});
+                this.$http.get('api.php?action=addCar&data='+encodeURIComponent(formData)).then((response) => {
+                    this.$http.get('api.php?action=getCars').then((response) => {
+                        this.cars = JSON.parse(response.body);
+                    }, (error) => {});
+                    this.dealer = ""; this.make = ""; this.model = ""; this.km = ""; this.year = ""; this.price = "";
+                }, (error) => {});
+            },
+            filter: function(key, value) {
+                this.filters[key] = value;
+                filters = JSON.stringify(this.filters);
+                console.log(filters);
+
+                this.$http.get('api.php?action=getCars&filters='+encodeURIComponent(filters)).then((response) => {
+                    this.cars = JSON.parse(response.body);
+                }, (error) => {});
+            }
+        }
+    })
+</script>
