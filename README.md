@@ -10,3 +10,4 @@ What was implemented:
 
 ###### Please run `composer install` to get the vendors modules
 For database please see `wolfpack.sql`
+For API documentation please see `API Documentation.docx`
